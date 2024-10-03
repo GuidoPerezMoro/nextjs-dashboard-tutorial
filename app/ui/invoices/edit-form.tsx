@@ -9,7 +9,8 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
-import { updateInvoice } from "@/app/lib/actions";
+import { updateInvoice, State } from "@/app/lib/actions";
+import { useActionState } from "react";
 
 export default function EditInvoiceForm({
   invoice,
@@ -18,10 +19,16 @@ export default function EditInvoiceForm({
   invoice: InvoiceForm;
   customers: CustomerField[];
 }) {
-  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  const initialState: State = { message: null, errors: {} };
+  const [state, formAction] = useActionState(
+    updateInvoice.bind(null, invoice.id),
+    initialState
+  );
+
+  const hasErrors = Object.keys(state.errors ?? {}).length > 0;
 
   return (
-    <form action={updateInvoiceWithId}>
+    <form action={formAction}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
@@ -34,6 +41,7 @@ export default function EditInvoiceForm({
               name="customerId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue={invoice.customer_id}
+              aria-describedby="customer-error"
             >
               <option value="" disabled>
                 Select a customer
@@ -46,6 +54,14 @@ export default function EditInvoiceForm({
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
+          <div id="customer-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.customerId &&
+              state.errors.customerId.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
         </div>
 
         {/* Invoice Amount */}
@@ -54,23 +70,30 @@ export default function EditInvoiceForm({
             Choose an amount
           </label>
           <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="amount"
-                name="amount"
-                type="number"
-                step="0.01"
-                defaultValue={invoice.amount}
-                placeholder="Enter USD amount"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              />
-              <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
+            <input
+              id="amount"
+              name="amount"
+              type="number"
+              step="0.01"
+              defaultValue={invoice.amount}
+              placeholder="Enter USD amount"
+              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              aria-describedby="amount-error"
+            />
+            <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+          </div>
+          <div id="amount-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.amount &&
+              state.errors.amount.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
           </div>
         </div>
 
         {/* Invoice Status */}
-        <fieldset>
+        <fieldset aria-describedby="status-error">
           <legend className="mb-2 block text-sm font-medium">
             Set the invoice status
           </legend>
@@ -110,8 +133,27 @@ export default function EditInvoiceForm({
               </div>
             </div>
           </div>
+          <div id="status-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.status &&
+              state.errors.status.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
         </fieldset>
       </div>
+
+      {/* Bottom Error Message */}
+      {hasErrors && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-400 rounded-md">
+          <p className="text-red-500 text-sm">
+            Some fields are missing or incorrect. Please fill in all required
+            fields.
+          </p>
+        </div>
+      )}
+
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/invoices"
