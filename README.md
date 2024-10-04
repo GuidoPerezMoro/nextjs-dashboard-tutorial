@@ -4,4 +4,11 @@ This is the starter template for the Next.js App Router Course. It contains the 
 
 For more information, see the [course curriculum](https://nextjs.org/learn) on the Next.js Website.
 
-### Deployed project [here](https://nextjs-dashboard-tutorial-pink-ten.vercel.app/)
+## Deployed project
+
+- [nextjs-dashboard-tutorial-pink-ten.vercel.app](https://nextjs-dashboard-tutorial-pink-ten.vercel.app)
+
+## Credentials
+
+- Email: user@nextmail.com
+- Password: 123456
